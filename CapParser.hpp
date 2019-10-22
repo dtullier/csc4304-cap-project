@@ -1,3 +1,6 @@
+//author: Jackie Bowers
+//Date: October 21, 2019
+
 #ifndef CAPPARSER_HPP
 #define CAPPARSER_HPP
 
