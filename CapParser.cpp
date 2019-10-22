@@ -1,3 +1,5 @@
+//author: Jackie Bowers
+//Date: October 21, 2019
 #include "CapParser.hpp"
 
 using namespace rapidxml;
