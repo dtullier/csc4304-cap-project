@@ -17,11 +17,12 @@ CapParser::getCapNodes() {
     }
     // else invalid format, CAP version must be specified
 
-    // For now, get all relevant CAP attributes in any order
+    // For now, get all relevant CAP attributes in any order until we are certain of xml structure. 
     vector<vector<string>> cap_vector;
     CapParse(first_node, cap_vector);
 
     for (auto &cap_iterator : CapParse) {
+        // add area and identifier.
         if (cap_iterator[0] = "sender") sender = cap_iterator[1];
         else if (cap_iterator[0] = "status") status = cap_iterator[1];
         else if (cap_iterator[0] = "type") type = cap_iterator[1];
