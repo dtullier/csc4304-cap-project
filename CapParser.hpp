@@ -17,7 +17,7 @@ using namespace std;
 class CapParser
 {
     private:
-        string sender, status, type, event, severity, certainty, headline, description;
+        string sender, status, type, event, severity, certainty, headline, description, identifier, area;
         xml_document<> doc;
         void capParse(xml_node<>* cap_node, vector<vector<string> > &node_vector);
     public:
