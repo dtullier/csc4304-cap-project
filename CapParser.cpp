@@ -6,8 +6,8 @@ using namespace rapidxml;
 using namespace std;
 
 CapParser::CapParser(char* filename){
-	cout << "parse xml";
 	ifstream theFile (filename);
+	//Idea to use a vector<char> buffer from https://stackoverflow.com/questions/22597492/rapidxml-loading-xml-files
 	vector<char> buffer((istreambuf_iterator<char>(theFile)), istreambuf_iterator<char>());
 	buffer.push_back('\0');
 	doc.parse<0>(&buffer[0]);
@@ -18,7 +18,6 @@ void CapParser::getCapNodes() {
     string alert_version;
     if (strncmp(cap_node->name(), "cap:alert", 100) == 0) {
         alert_version = cap_node->first_attribute()->value();
-        cout << alert_version;
     }
     // else invalid format, CAP version must be specified
 
