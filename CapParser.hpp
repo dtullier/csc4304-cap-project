@@ -1,11 +1,12 @@
 //author: Jackie Bowers
 //Date: October 21, 2019
-
+//Uses library rapidxml from http://rapidxml.sourceforge.net/
 #ifndef CAPPARSER_HPP
 #define CAPPARSER_HPP
 
 
 #include <iostream>
+#include <cstring>
 #include <string>
 #include <vector>
 #include "rapidxml.hpp"
