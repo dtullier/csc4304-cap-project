@@ -2,17 +2,17 @@
 var debug = require('debug');
 var express = require('express');
 var path = require('path');
-var favicon = require('serve-favicon');
+//var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var xml = require('xml'); 
-
+const net = require('net');
 var routes = require('./routes/index');
 var users = require('./routes/users');
-
-
 var app = express();
+
+console.log("started"); 
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -31,14 +31,29 @@ app.use('/users', users);
 
 app.post('/submitAlert', function (req, res, next) {
     var test = [{
-        alert: [{ sender: "David" }, { sent: "12:00" }, { status: "Active" }, { scope: "public" },
+        alert: [{ sender: "David" }, { sent: Date.now() }, { status: "Active" }, { scope: "public" },
         {
-            info: [{ event: "robbery" }, { severity: "severe" }, { certainty: "certain" },
+            info: [{ event: req.body.alertTitle }, { severity: "severe" }, { certainty: "certain" },
             { headline: req.body.alertTitle }, { description: req.body.alertBody }]
         }]
     }]; 
-    console.log(xml(test, true)); 
-    res.redirect('/'); });
+    console.log(xml(test, true));
+    const client = net.createConnection({ port: 8080 }, () => {
+        // 'connect' listener.
+        console.log('connected to server!');
+        client.write(xml(test));
+      });
+      client.on('data', (data) => {
+        console.log(data.toString());
+        client.end();
+      });
+      client.on('end', () => {
+        console.log('disconnected from server');
+      });
+    res.redirect('/');
+});
+
+
 
 
 // catch 404 and forward to error handler
