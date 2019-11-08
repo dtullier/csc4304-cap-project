@@ -9,5 +9,4 @@
 <ol>$npm install</ol>
 <ol>$node app.js</ol>
 <ol>Go in your browser and go to http://localhost:3000/</ol>
-<ol>or just use visual studio</ol>
 </ul>
