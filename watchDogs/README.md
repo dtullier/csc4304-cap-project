@@ -8,5 +8,5 @@
 <ol>cd into watchdog directory</ol>
 <ol>$npm install</ol>
 <ol>$node app.js</ol>
-<ol>or just use visual studio</ol>
+<ol>Go in your browser and go to http://localhost:3000/</ol>
 </ul>
