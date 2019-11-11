@@ -1,0 +1,10 @@
+#!/bin/bash
+#CSC 4304 project
+#Author: Devin Tullier
+
+g++ -o serverFile server.cpp
+serverFile 8000
+rm serverFile
+
+
+

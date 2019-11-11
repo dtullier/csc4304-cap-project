@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <cap:alert xmlns:cap="um:oasis:names:tc:emergency:cap:1.1">
     <cap:identifier>its me</cap:identifier>
-    <cap:sender>Jackie</cap:sender>
+    <cap:sender>Devin</cap:sender>
     <cap:status>Alive</cap:status>
     <cap:msgType>Alert</cap:msgType>
     <cap:info>

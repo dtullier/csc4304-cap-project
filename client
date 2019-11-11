@@ -1,0 +1,15 @@
+#!/bin/bash
+#CSC 4304 project
+#Author: Devin Tullier
+
+g++ -o clientFile client.cpp
+clientFile 127.0.0.1 8000
+rm clientFile
+
+
+
+
+
+
+
+

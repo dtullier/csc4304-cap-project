@@ -1,0 +1,10 @@
+#!/bin/bash
+#CSC 4304 project
+#Author: Devin Tullier
+
+g++ -o client2File client2.cpp
+client2File
+rm client2File
+
+
+
