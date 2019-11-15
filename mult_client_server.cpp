@@ -4,14 +4,15 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <ctype.h>
 #include <ctime>
+#include <errno.h>
 #include "CapParser.hpp"
 #include <poll.h>
-#include <ctpl.h>
 
-#define SERVER_PORT 55555;
+#define SERVER_PORT 8000
 
 using namespace rapidxml;
 using namespace std;
@@ -24,48 +25,48 @@ void error(const char *msg)
 
 int main(int argc, char *argv[])
 {
-	int len, sock_ret, ioctl_ret, bind_ret, listen_ret, poll_ret, receive, on = 1;
+	int len, sock_ret, ioctl_ret, bind_ret, listen_ret, poll_ret, receive, trysend, on = 1;
 	int sock = -1, new_sock = -1;
 	bool end_server = false, remove_conn = false;
-	int close_connection;
+	int close_conn;
 	char buffer[80];
-	struct sockadder_in addr;
+	struct sockaddr_in6 addr;
 	int timeout;
 	struct pollfd poll_file_des[200];
-	int nfds = 1, current_size = 0, i, j;
+	int nfds = 1, current_poll_size = 0, i, j;
 	
-	// create stream socket (for TCP, IPv4)
-	sock = socket(AF_INET, SOCK_STREAM, 0);
+	// create stream socket (for TCP, IP)
+	sock = socket(AF_INET6, SOCK_STREAM, 0);
 	if (sock < 0)
 	{
-		fprintf(stderr, "Error opening socket");
+		printf("Error opening socket");
 		return 1;
 	}
 	
 	// socket should be reusable
-	sock_ret = setsockopt(socket_description, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
+	sock_ret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (sock_ret < 0) {
-		fprintf(stderr, "Error with setsockopt");
+		printf("Error with setsockopt");
 		close(sock);
 		return 1;
 	}
 	
 	// make socket nonblocking
-	ioctl_ret = ioctl(listen_sd, FIONBIO, (char *)&on);
+	ioctl_ret = ioctl(sock, FIONBIO, (char *)&on);
 	if (ioctl_ret < 0) {
-		fprintf(stderr, "Error making socket nonblocking in ioctl()");
+		printf("Error making socket nonblocking in ioctl()");
 		close(sock);
 		return 1;
 	}
 	
 	// bind socket
 	memset(&addr, 0, sizeof(addr));
-	addr.sin_family = AF_INET;
-	memcpy(&addr.sin_addr, &inadder_any, sizeof(inaddr_any));
-	addr.sin_port = htons(SERVER_PORT);
+	addr.sin6_family = AF_INET;
+	memcpy(&addr.sin6_addr, &in6addr_any, sizeof(in6addr_any));
+	addr.sin6_port = htons(SERVER_PORT);
 	bind_ret = bind(sock, (struct sockaddr *)&addr, sizeof(addr));
 	if (bind_ret < 0) {
-		fprintf(stderr, "Error binding socket in bind()")
+		printf("Error binding socket in bind()");
 		close(sock);
 		return 1;
 	}
@@ -73,13 +74,13 @@ int main(int argc, char *argv[])
 	// create listening queue
 	listen_ret = listen(sock, 32);
 	if (listen_ret < 0) {
-		fprintf(stderr, "Error creating listen queue");
+		printf("Error creating listen queue");
 		close(sock);
 		return 1;
 	}
 	
 	// initialize pollfd struct
-	memset(poll_file_des, 0, sizeof(fds));
+	memset(poll_file_des, 0, sizeof(poll_file_des));
 	
 	// set up listening sock
 	poll_file_des[0].fd = sock;
@@ -96,19 +97,19 @@ int main(int argc, char *argv[])
 		
 		// check if poll failed
 		if (poll_ret < 0) {
-			fprintf(stderr, "poll() failed");
+			printf("poll() failed");
 			return 1;
 		}
 		
 		// check for timeout
 		if(poll_ret == 0) {
-			fprintf("Server Timeout");
+			printf("Server Timeout");
 			return 0;
 		}
 		
 		// check which sockets are readable
-		poll_size = nfds;
-		for (i = 0; i < poll_size; i++) {
+		current_poll_size = nfds;
+		for (i = 0; i < current_poll_size; i++) {
 			
 			// find those that returned POLLIN
 			if(poll_file_des[i].revents == 0)
@@ -116,8 +117,8 @@ int main(int argc, char *argv[])
 			
 			// if event not POLLIN, unexpected error
 			if(poll_file_des[i].revents != POLLIN) {
-				fprintf(stderr, "Error %d\n", poll_file_des[i].revents);
-				end_server = TRUE;
+				printf("Error %d\n", poll_file_des[i].revents);
+				end_server = true;
 				break;
 			}
 			
@@ -125,11 +126,11 @@ int main(int argc, char *argv[])
 				// Accept incoming connections
 			    do {
 			        new_sock = accept(sock, NULL, NULL);
-			        if (new_sock) < 0 {
+			        if (new_sock < 0) {
 			        	// if EWOULDBLOCK, all have been accepted
 			        	if (errno != EWOULDBLOCK) {
-			        		fprintf(stderr, "accept failed");
-			        		end_server = Truel
+			        		printf("accept failed");
+			        		end_server = true;
 			        	}
 			        	break;
 			        }
@@ -146,23 +147,23 @@ int main(int argc, char *argv[])
 			
 			
 			else {
-				close_conn = FALSE;
+				close_conn = false;
 				
 				// Socket had POLLIN but is not socket for incoming connections.
 				// Receive data from socket
 				receive = recv(poll_file_des[i].fd, buffer, sizeof(buffer), 0);
 				if (receive < 0) {
 					if (errno != EWOULDBLOCK) {
-						fprintf(stderr, "recv()");
-						close_conn = TRUE;
+						printf("recv()");
+						close_conn = true;
 					}
-					break
+					break;
 				}
 				
 				// check if connection closed by client
 				if (receive == 0) {
-					fprintf(stderr, "Connection closed\n");
-					close_conn = TRUE;
+					printf("Connection closed\n");
+					close_conn = true;
 					break;
 				}
 				
@@ -172,8 +173,8 @@ int main(int argc, char *argv[])
 				// echo data; change this part to parse and store data
 				trysend = send(poll_file_des[i].fd, buffer, len, 0);
 				if (trysend < 0) {
-					fprintf(stderr, "failed to send");
-					close_conn = TRUE;
+					printf("failed to send");
+					close_conn = true;
 					break;
 				}
 			} while(true);
@@ -188,7 +189,7 @@ int main(int argc, char *argv[])
 			      
 		}
 		
-	}
+	} while(true);
 	
 	// need to clean up poll array to remove descriptors of sockets for closed connections
 	if (remove_conn) {
