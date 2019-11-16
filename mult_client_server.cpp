@@ -28,12 +28,15 @@ int main(int argc, char *argv[])
 	int len, sock_ret, ioctl_ret, bind_ret, listen_ret, poll_ret, receive, trysend, on = 1;
 	int sock = -1, new_sock = -1;
 	bool end_server = false, remove_conn = false;
-	int close_conn;
-	char buffer[80];
+	bool close_conn = false;
+	char buffer[2048];
 	struct sockaddr_in6 addr;
 	int timeout;
 	struct pollfd poll_file_des[200];
-	int nfds = 1, current_poll_size = 0, i, j;
+	int nfds = 1, current_poll_size = 0;
+        FILE *fp, *fp2;
+	int ch = 0;
+	int words;
 	
 	// create stream socket (for TCP, IP)
 	sock = socket(AF_INET6, SOCK_STREAM, 0);
@@ -61,7 +64,7 @@ int main(int argc, char *argv[])
 	
 	// bind socket
 	memset(&addr, 0, sizeof(addr));
-	addr.sin6_family = AF_INET;
+	addr.sin6_family = AF_INET6;
 	memcpy(&addr.sin6_addr, &in6addr_any, sizeof(in6addr_any));
 	addr.sin6_port = htons(SERVER_PORT);
 	bind_ret = bind(sock, (struct sockaddr *)&addr, sizeof(addr));
@@ -92,25 +95,25 @@ int main(int argc, char *argv[])
 	// check for incoming connections or data in loop
 	do {
 		// poll
-		printf("Waiting...");
+		printf("Waiting...\n");
 		poll_ret = poll(poll_file_des, nfds, timeout);
 		
 		// check if poll failed
 		if (poll_ret < 0) {
-			printf("poll() failed");
+			printf("poll() failed\n");
 			return 1;
 		}
 		
 		// check for timeout
 		if(poll_ret == 0) {
-			printf("Server Timeout");
+			printf("Server Timeout\n");
 			return 0;
 		}
 		
 		// check which sockets are readable
 		current_poll_size = nfds;
-		for (i = 0; i < current_poll_size; i++) {
-			
+		for (int i = 0; i < current_poll_size; i++) {
+		        cout << i;	
 			// find those that returned POLLIN
 			if(poll_file_des[i].revents == 0)
 				continue;
@@ -126,32 +129,36 @@ int main(int argc, char *argv[])
 				// Accept incoming connections
 			    do {
 			        new_sock = accept(sock, NULL, NULL);
+				//printf("%d",new_sock);
 			        if (new_sock < 0) {
 			        	// if EWOULDBLOCK, all have been accepted
 			        	if (errno != EWOULDBLOCK) {
-			        		printf("accept failed");
+			        		printf("accept failed\n");
 			        		end_server = true;
 			        	}
 			        	break;
 			        }
 			        
 			        // Add new connection to poll struct
-			        printf("New connection - %d\n", new_sock);
+			        printf("Adding new connection - %d\n", new_sock);
 			        poll_file_des[nfds].fd = new_sock;
 			        poll_file_des[nfds].events = POLLIN;
 			        nfds++;
+				break;
 			        
 			        // Accept another incoming connection
 			    } while(new_sock != -1);
+			    break;
 			}
 			
 			
 			else {
 				close_conn = false;
-				
 				// Socket had POLLIN but is not socket for incoming connections.
 				// Receive data from socket
-				receive = recv(poll_file_des[i].fd, buffer, sizeof(buffer), 0);
+				printf("pll_file_des[i].fd is %d", poll_file_des[i].fd);
+				receive = read(poll_file_des[i].fd, buffer, 2048);
+				printf("%s\n", buffer);
 				if (receive < 0) {
 					if (errno != EWOULDBLOCK) {
 						printf("recv()");
@@ -165,27 +172,33 @@ int main(int argc, char *argv[])
 					printf("Connection closed\n");
 					close_conn = true;
 					break;
-				}
+				} 
 				
 				// if not connection closed, data received
 				len = receive;
 				
 				// echo data; change this part to parse and store data
 				trysend = send(poll_file_des[i].fd, buffer, len, 0);
+				cout << buffer;
+				cout << len;
 				if (trysend < 0) {
-					printf("failed to send");
+					printf("failed to send\n");
 					close_conn = true;
 					break;
 				}
+				printf("sent data back\n");
+				break;
+
 			} while(true);
 			
 			// close connection
 			if (close_conn){
+				printf("closing connection %d", poll_file_des[i].fd);
 				close(poll_file_des[i].fd);
 				poll_file_des[i].fd = -1;
 				remove_conn = true;
 			}
-			
+			printf("finished loop\n");
 			      
 		}
 		
