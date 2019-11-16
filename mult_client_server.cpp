@@ -157,46 +157,47 @@ int main(int argc, char *argv[])
 				// Socket had POLLIN but is not socket for incoming connections.
 				// Receive data from socket
 				printf("pll_file_des[i].fd is %d", poll_file_des[i].fd);
-				receive = read(poll_file_des[i].fd, buffer, 2048);
-				printf("%s\n", buffer);
-				if (receive < 0) {
-					if (errno != EWOULDBLOCK) {
-						printf("recv()");
-						close_conn = true;
-					}
-					break;
-				}
+
+				do {
+				    receive = read(poll_file_des[i].fd, buffer, 2048);
+				    printf("%s\n", buffer);
+				    if (receive < 0) {
+				         	if (errno != EWOULDBLOCK) {
+					        	printf("recv()");
+						        close_conn = true;
+					        }
+					        break;
+				    }
 				
-				// check if connection closed by client
-				if (receive == 0) {
-					printf("Connection closed\n");
-					close_conn = true;
-					break;
-				} 
+				    // check if connection closed by client
+				    if (receive == 0) {
+					    printf("Connection closed\n");
+					    close_conn = true;
+				    } 
 				
 				// if not connection closed, data received
-				len = receive;
+				    len = receive;
 				
 				// echo data; change this part to parse and store data
-				trysend = send(poll_file_des[i].fd, buffer, len, 0);
-				cout << buffer;
-				cout << len;
-				if (trysend < 0) {
-					printf("failed to send\n");
-					close_conn = true;
-					break;
-				}
-				printf("sent data back\n");
-				break;
-
-			} while(true);
-			
-			// close connection
-			if (close_conn){
-				printf("closing connection %d", poll_file_des[i].fd);
-				close(poll_file_des[i].fd);
-				poll_file_des[i].fd = -1;
-				remove_conn = true;
+				    trysend = send(poll_file_des[i].fd, buffer, len, 0);
+				    cout << buffer;
+				    cout << len;
+				    if (trysend < 0) {
+					    printf("failed to send\n");
+					    close_conn = true;
+					    break;
+				    }
+				    printf("sent data back\n");
+				} while(true);
+		 
+		                printf("%d\n",close);	
+			        // close connection
+			        if (close_conn){
+				        printf("closing connection %d/n", poll_file_des[i].fd);
+				        close(poll_file_des[i].fd);
+				        poll_file_des[i].fd = -1;
+				        remove_conn = true;
+			        }
 			}
 			printf("finished loop\n");
 			      
@@ -224,3 +225,4 @@ int main(int argc, char *argv[])
 		if(poll_file_des[i].fd >= 0) close(poll_file_des[i].fd);
 	}
 }
+
