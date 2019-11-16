@@ -173,6 +173,7 @@ int main(int argc, char *argv[])
 				    if (receive == 0) {
 					    printf("Connection closed\n");
 					    close_conn = true;
+					    break;
 				    } 
 				
 				// if not connection closed, data received
