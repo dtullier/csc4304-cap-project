@@ -147,11 +147,11 @@ int main(int argc, char *argv[])
 			        poll_file_des[nfds].fd = new_sock;
 			        poll_file_des[nfds].events = POLLIN;
 			        nfds++;
-				break;
+				//break;
 			        
 			        // Accept another incoming connection
 			    } while(new_sock != -1);
-			    break;
+			    //break;
 			}
 			
 			
