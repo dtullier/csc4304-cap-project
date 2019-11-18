@@ -28,15 +28,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
-
 app.post('/submitAlert', function (req, res, next) {
     var test = [{
         alert: [{ sender: "David" }, { sent: Date.now() }, { status: "Active" }, { scope: "public" },
         {
-            info: [{ event: req.body.alertTitle }, { severity: "severe" }, { certainty: "certain" },
+            info: [{ event: req.body.alertTitle }, { location: req.body.location }, { severity: "severe" }, { certainty: "certain" },
             { headline: req.body.alertTitle }, { description: req.body.alertBody }]
         }]
-    }]; 
+    }];
     console.log(xml(test, true));
     const client = net.createConnection({ port: 8080 }, () => {
         // 'connect' listener.
