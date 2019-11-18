@@ -1,3 +1,6 @@
+//adopted from https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_74/rzab6/poll.htm
+// Jackie Bowers - November 15, 2019
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
